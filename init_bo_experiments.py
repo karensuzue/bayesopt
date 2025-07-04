@@ -207,11 +207,11 @@ def bayesian_opt(objective, hyperparam_names, hyperparam_config, X_train, y_trai
     for i in range(init_points):
         sample = [np.random.uniform(*param['bounds']) for param in hyperparam_config.values()]
         X_param_train.append(sample)
-    print("X train: ", X_param_train)
+    # print("X train: ", X_param_train)
     
     # Evaluate the objective function on the initial samples
     y_param_train = objective(X_param_train, hyperparam_names, hyperparam_config, X_train, y_train, seed)
-    print("y train: ", y_param_train)
+    # print("y train: ", y_param_train)
 
 
     # === Step 2: Create a grid for acquisition function evaluation ===
@@ -225,7 +225,7 @@ def bayesian_opt(objective, hyperparam_names, hyperparam_config, X_train, y_trai
     
     # Flatten the grid into a 2D array of shape (100*num_dimensions, num_dimensions)
     X_grid = np.vstack([grid.ravel() for grid in grids]).T
-    print("X_grid: ", X_grid)
+    # print("X_grid: ", X_grid)
 
     # === Step 3: Bayesian Optimization Loop ===
     mu = None # Posterior mean predictions from GP
@@ -235,25 +235,25 @@ def bayesian_opt(objective, hyperparam_names, hyperparam_config, X_train, y_trai
     best_cv_score = float('-inf') # Best CV score seen so far
 
     for i in range(iterations):
-        print("Iteration ", i)
+        # print("Iteration ", i)
         # Fit GP surrogate model and predict on X_grid
         mu, cov = GP(X_param_train, y_param_train, X_grid, sigma, noise)
-        print("Mean: ", mu)
-        print("Covariance: ", cov)
+        # print("Mean: ", mu)
+        # print("Covariance: ", cov)
 
         # Obtain standard deviation (uncertainty)
         std = np.sqrt(np.diag(cov)).reshape(-1, 1)
 
         # Evaluate acquisition function on X_grid
         scores = acquisition_ucb(mu, std)
-        print("Scores: ", scores)
-        print("Scores shape: ", scores.shape)
+        # print("Scores: ", scores)
+        # print("Scores shape: ", scores.shape)
 
         # Select next point to observe
         next_x = np.array([X_grid[np.argmax(scores)]]) # maximize acquisition function
-        print("Next x: ", next_x)
+        # print("Next x: ", next_x)
         next_y = objective(next_x, hyperparam_names, hyperparam_config, X_train, y_train, seed)
-        print("Next y: ", next_y)
+        # print("Next y: ", next_y)
 
         # Update best score and hyperparameter configuration
         if next_y[0,0] > best_cv_score:
@@ -322,12 +322,12 @@ def main():
             # Compute cross-validated accuracy
             cv_score = objective(params, hyperparam_names, hyperparam_config, X_train, y_train, replicate)
             # Update best_parameter
-            if cv_score > best_cv_score:
+            if cv_score[0,0] > best_cv_score:
                 best_params = params
                 best_cv_score = cv_score
         param_dict = vector_to_param_dict(best_params[0], hyperparam_names, hyperparam_config)
     
-    # Use default hyperparameters
+    # Use default hyperparameters (baseline, no search)
     elif method == "default":
         param_dict = {}
 
@@ -345,6 +345,7 @@ def main():
     result = {
         "dataset": dataset_idx,
         "replicate": replicate,
+        "evaluations": evaluations,
         "method": method,
         "final_cv_accuracy_score": final_score,
         "test_accuracy_score": test_score,
