@@ -10,7 +10,7 @@
 #SBATCH --mail-type=END,FAIL                # Mail if jobs end, or fail
 #SBATCH --mail-user=suzuekar@msu.edu
 
-module load anaconda3/2022.05
+source /home/suzuek/minconda3/etc/profile.d/conda.sh
 conda activate bo_exp
 
 # Define grid (3 datasets × 6 methods × 20 replicates = 360 total)
