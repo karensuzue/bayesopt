@@ -3,14 +3,15 @@
 #SBATCH --output=logs/bo_%A_%a.out
 #SBATCH --error=logs/bo_%A_%a.err
 #SBATCH --array=0-359
-#SBATCH --time=02:00:00
+#SBATCH --time=03:00:00
 #SBATCH --cpus-per-task=4
-#SBATCH --mem=8G
+#SBATCH --mem=16G
 
 #SBATCH --mail-type=END,FAIL                # Mail if jobs end, or fail
 #SBATCH --mail-user=suzuekar@msu.edu
 
 source /home/suzuek/minconda3/etc/profile.d/conda.sh
+conda init
 conda activate bo_exp
 
 # Define grid (3 datasets × 6 methods × 20 replicates = 360 total)
