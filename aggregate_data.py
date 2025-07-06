@@ -6,9 +6,10 @@ import json
 from pathlib import Path
 from collections import defaultdict
 import numpy as np
+import matplotlib.pyplot as plt
 
 
-dataset_idx = 2 # [0, 1, 2]
+dataset_idx = 0 # [0, 1, 2]
 # methods = ["bo_5", "bo_10", "bo_20", "bo_50", "random", "default"]
 json_dir = Path(f"bo_experiments/{dataset_idx}")
 
@@ -53,3 +54,49 @@ for method in averages:
 
 with open(json_dir/f"avg_accuracies.json", "w") as f:
     json.dump(averages, f, indent=2)
+
+
+# Boxplot of cv and test accuracy scores, grouped by each method
+methods = list(scores.keys())
+cv_data = [scores[m]["cv"] for m in methods]
+test_data = [scores[m]["test"] for m in methods]
+
+print(cv_data)
+print(test_data)
+
+x = np.arange(len(methods)) # [0, 1, 2, 3, 4, 5, 6]
+width = 0.35  # width of each boxplot
+
+fig, ax = plt.subplots(figsize=(12, 6))
+
+# Plot CV accuracy
+bp1 = ax.boxplot(cv_data,
+                 positions=x - width/2, # left of center
+                 widths=width,
+                 patch_artist=True,
+                 boxprops=dict(facecolor="lightblue"),
+                 medianprops=dict(color="black"))
+
+# Plot Test accuracy
+bp2 = ax.boxplot(test_data,
+                 positions=x + width/2, # right of center
+                 widths=width,
+                 patch_artist=True,
+                 boxprops=dict(facecolor="salmon"),
+                 medianprops=dict(color="black"))
+
+# Set x-axis
+ax.set_xticks(x) # set center position
+ax.set_xticklabels(methods, rotation=45) # label each "tick", rotate label by 45
+
+# Add legend 
+ax.legend([bp1["boxes"][0], bp2["boxes"][0]],
+          ["CV Accuracy", "Test Accuracy"],
+          loc="upper right")
+
+ax.set_ylabel("Accuracy")
+ax.set_title(f"CV vs Test Accuracy per Method (Dataset {dataset_idx})")
+ax.grid(True)
+plt.tight_layout()
+plt.savefig(json_dir/f"boxplot_{dataset_idx}.png", dpi=300)
+plt.close()
